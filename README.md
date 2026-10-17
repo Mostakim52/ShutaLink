@@ -3,7 +3,7 @@
 
 <h3 align="center">Every new GitHub issue — read, rated, and filed. About twenty seconds, start to finish.</h3>
 
-<p align="center"><em>শুতা (shuta) is the Bangla word for thread — one thread from GitHub, through your triage, into Notion and Slack.</em></p>
+<p align="center"><em>Shuta — সুতা — is the Bangla word for thread: one thread from GitHub, through your triage, into Notion and Slack.</em></p>
 
 <p align="center">
   <a href="https://shutalink.vercel.app"><img src="https://img.shields.io/badge/status-beta-ffb020?style=flat-square&amp;labelColor=081a2e" alt="Status: beta"/></a>
