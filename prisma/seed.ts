@@ -7,7 +7,7 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-const DEMO_EMAIL = "demo@signalwright.dev";
+const DEMO_EMAIL = "demo@shutalink.dev";
 
 async function seedUser() {
   return prisma.user.upsert({

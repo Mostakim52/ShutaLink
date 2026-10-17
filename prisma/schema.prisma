@@ -25,6 +25,7 @@ enum RunStatus {
   SUCCEEDED
   FAILED
   CANCELLED
+  SKIPPED
 }
 
 enum IntegrationProvider {
@@ -39,19 +40,80 @@ enum LogLevel {
   ERROR
 }
 
-model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  name      String?
-  avatarUrl String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+}
 
-  workflows    Workflow[]
-  runs         WorkflowRun[]
-  integrations IntegrationConfig[]
+model User {
+  id            String     @id @default(cuid())
+  email         String     @unique
+  name          String?
+  image         String?
+  emailVerified DateTime?
+  status        UserStatus @default(ACTIVE)
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  workflows     Workflow[]
+  runs          WorkflowRun[]
+  integrations  IntegrationConfig[]
+  accounts      Account[]
+  sessions      Session[]
+  installations GithubInstallation[]
 
   @@index([createdAt])
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model GithubInstallation {
+  id             String    @id @default(cuid())
+  installationId Int       @unique
+  userId         String
+  accountLogin   String?
+  accountType    String?
+  suspendedAt    DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 model Workflow {

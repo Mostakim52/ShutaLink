@@ -39,9 +39,31 @@ export const githubIssueWebhookSchema = z.object({
       login: z.string(),
     })
     .optional(),
+  installation: z
+    .object({
+      id: z.number(),
+    })
+    .optional(),
 });
 
 export type GithubIssueWebhookEvent = z.infer<typeof githubIssueWebhookSchema>;
+
+export const githubInstallationWebhookSchema = z.object({
+  action: z.string(),
+  installation: z.object({
+    id: z.number(),
+    account: z.object({
+      id: z.number(),
+      login: z.string(),
+      type: z.string(),
+    }),
+    suspended_at: z.string().nullable().optional(),
+  }),
+});
+
+export type GithubInstallationWebhookEvent = z.infer<
+  typeof githubInstallationWebhookSchema
+>;
 
 export const workflowTriggerConfigSchema = z.object({
   repositories: z.array(z.string().regex(/^[\w.-]+\/[\w.-]+$|^\*$/)).min(1),

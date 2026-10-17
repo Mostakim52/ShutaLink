@@ -1,6 +1,7 @@
 import { RunStatus, type Prisma } from "@prisma/client";
 import { logger, task } from "@trigger.dev/sdk";
 import { createNotionPage, resolveSlackChannel, getIntegrationContext, sendSlackMessage } from "../lib/composio";
+import { isGlobalCapReached } from "../lib/limits";
 import type {
   IssueSeverity,
   NotionArchiveResult,
@@ -50,7 +51,7 @@ function renderNotionContent(payload: WorkflowTaskPayload, analysis: IssueAnalys
     payload.issueBody?.trim() || "(empty body)",
     "",
     "---",
-    "_Archived automatically by Signalwright._",
+    "_Archived automatically by ShutaLink._",
   ].join("\n");
 }
 
@@ -110,6 +111,11 @@ async function notifySlack(
   return result;
 }
 
+export interface SkippedRunResult {
+  skipped: true;
+  reason: string;
+}
+
 export const processGithubIssue = task({
   id: "process-github-issue",
   description:
@@ -125,10 +131,13 @@ export const processGithubIssue = task({
     concurrencyLimit: 20,
   },
   maxDuration: 300,
-  run: async (payload: WorkflowTaskPayload, { ctx }): Promise<ProcessGithubIssueResult> => {
+  run: async (
+    payload: WorkflowTaskPayload,
+    { ctx }
+  ): Promise<ProcessGithubIssueResult | SkippedRunResult> => {
     const run = await prisma.workflowRun.findUnique({
       where: { id: payload.runId },
-      include: { workflow: true },
+      include: { workflow: true, user: { select: { status: true } } },
     });
 
     if (!run) {
@@ -141,6 +150,33 @@ export const processGithubIssue = task({
         attempt: ctx.attempt.number,
       });
       throw new Error("Run already completed successfully");
+    }
+
+    let skipReason: string | null = null;
+    if (run.user.status === "SUSPENDED") {
+      skipReason = "user_suspended";
+    } else if (run.workflow.status === "PAUSED" || run.workflow.status === "ARCHIVED") {
+      skipReason = "workflow_paused";
+    } else if (await isGlobalCapReached()) {
+      skipReason = "global_daily_cap";
+    }
+
+    if (skipReason) {
+      await appendLog(
+        run.id,
+        "orchestration",
+        "WARN",
+        `Skipping run: ${skipReason}`
+      );
+      await prisma.workflowRun.update({
+        where: { id: run.id },
+        data: {
+          status: RunStatus.SKIPPED,
+          finishedAt: new Date(),
+          error: `skipped:${skipReason}`,
+        },
+      });
+      return { skipped: true, reason: skipReason };
     }
 
     if (ctx.attempt.number > 1) {

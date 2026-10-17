@@ -81,10 +81,8 @@ async function executeTool<TData>(
 ): Promise<TData> {
   const composio = getComposioClient();
 
-  const composioUserId = process.env.COMPOSIO_USER_ID || params.userId;
-
   const response = (await composio.tools.execute(slug, {
-    userId: composioUserId,
+    userId: params.userId,
     connectedAccountId: params.connectedAccountId,
     arguments: params.args,
     dangerouslySkipVersionCheck: true,
