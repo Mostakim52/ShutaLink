@@ -661,6 +661,17 @@ a {
   font-size: 12px;
 }
 
+.connect-error {
+  border: 1px solid var(--redline);
+  background: linear-gradient(180deg, rgba(64, 20, 13, 0.35), rgba(46, 12, 8, 0.35));
+  color: var(--chalk);
+  font-family: var(--font-plex-mono), monospace;
+  font-size: 12.5px;
+  line-height: 1.7;
+  padding: 14px 18px;
+  margin-bottom: 34px;
+}
+
 .allset {
   display: flex;
   align-items: center;

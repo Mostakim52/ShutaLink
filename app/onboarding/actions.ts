@@ -9,7 +9,9 @@ import {
 } from "../../lib/connect";
 import { requireUser } from "../../lib/session";
 
-function parseToolkit(raw: FormDataEntryValue | null): "notion" | "slack" {
+type Toolkit = "notion" | "slack";
+
+function parseToolkit(raw: FormDataEntryValue | null): Toolkit {
   const value = String(raw ?? "");
   if (value !== "notion" && value !== "slack") {
     throw new Error(`Unknown toolkit: ${value}`);
@@ -17,17 +19,41 @@ function parseToolkit(raw: FormDataEntryValue | null): "notion" | "slack" {
   return value;
 }
 
+function toolkitFromForm(formData: FormData): Toolkit {
+  try {
+    return parseToolkit(formData.get("toolkit"));
+  } catch (error) {
+    console.error("Onboarding action received an invalid toolkit", error);
+    redirect("/onboarding?error=invalid_request");
+  }
+}
+
 export async function startConnect(formData: FormData): Promise<void> {
   const user = await requireUser();
-  const toolkit = parseToolkit(formData.get("toolkit"));
-  const { redirectUrl } = await startToolkitConnect(user.id, toolkit);
+  const toolkit = toolkitFromForm(formData);
+
+  let redirectUrl: string;
+  try {
+    ({ redirectUrl } = await startToolkitConnect(user.id, toolkit));
+  } catch (error) {
+    console.error(`Composio connect failed for ${toolkit}`, error);
+    redirect(`/onboarding?error=connect_unavailable&toolkit=${toolkit}`);
+  }
+
   redirect(redirectUrl);
 }
 
 export async function refreshConnection(formData: FormData): Promise<void> {
   const user = await requireUser();
-  const toolkit = parseToolkit(formData.get("toolkit"));
-  await checkToolkitConnection(user.id, toolkit);
+  const toolkit = toolkitFromForm(formData);
+
+  try {
+    await checkToolkitConnection(user.id, toolkit);
+  } catch (error) {
+    console.error(`Composio status check failed for ${toolkit}`, error);
+    redirect(`/onboarding?error=refresh_failed&toolkit=${toolkit}`);
+  }
+
   revalidatePath("/onboarding");
 }
 

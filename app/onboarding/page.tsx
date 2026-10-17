@@ -21,8 +21,13 @@ interface SlackMetadata {
   slackAlertChannel?: string;
 }
 
-export default async function OnboardingPage() {
+export default async function OnboardingPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ error?: string; toolkit?: string }>;
+}) {
   const user = await requireUser();
+  const { error: connectError, toolkit: errorToolkit } = await searchParams;
 
   const [installation, notion, slack, workflow] = await Promise.all([
     prisma.githubInstallation.findFirst({
@@ -84,6 +89,20 @@ export default async function OnboardingPage() {
           channel, and every new issue gets read, rated, and filed.
         </p>
       </section>
+
+      {connectError ? (
+        <p className="connect-error" role="alert">
+          {connectError === "invalid_request"
+            ? "That connection request looked malformed. Please try again from the checklist."
+            : connectError === "refresh_failed"
+              ? `Couldn't reach the connection service to refresh your ${
+                  errorToolkit ?? "integration"
+                } status. Try again in a minute.`
+              : `Couldn't reach the connection service to start the ${
+                  errorToolkit ?? "integration"
+                } connection. Try again in a minute — if it keeps failing, check the server logs.`}
+        </p>
+      ) : null}
 
       {allSet ? (
         <section className="allset">
