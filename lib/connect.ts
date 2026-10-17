@@ -21,16 +21,36 @@ interface ConnectionRequestLike {
   redirectUrl?: unknown;
 }
 
+interface AuthConfigLike {
+  id?: unknown;
+  isComposioManaged?: unknown;
+}
+
 export async function startToolkitConnect(
   userId: string,
   toolkit: ConnectableToolkit
 ): Promise<StartConnectResult> {
   const composio = getComposioClient();
-  const authorize = composio.toolkits.authorize as unknown as (
+
+  const listAuthConfigs = composio.authConfigs.list as unknown as (
+    query: unknown
+  ) => Promise<{ items?: AuthConfigLike[] }>;
+  const configs = await listAuthConfigs({ toolkit });
+  const items = Array.isArray(configs?.items) ? configs.items : [];
+  const managed = items.find(
+    (item) => typeof item?.id === "string" && item.isComposioManaged === true
+  );
+  const fallback = items.find((item) => typeof item?.id === "string");
+  const authConfigId = (managed ?? fallback)?.id;
+  if (typeof authConfigId !== "string") {
+    throw new Error(`No Composio auth config found for toolkit ${toolkit}`);
+  }
+
+  const link = composio.connectedAccounts.link as unknown as (
     userId: string,
-    toolkitSlug: string
+    authConfigId: string
   ) => Promise<ConnectionRequestLike>;
-  const request = await authorize(userId, toolkit);
+  const request = await link(userId, authConfigId);
 
   const redirectUrl =
     typeof request?.redirectUrl === "string" && request.redirectUrl.length > 0

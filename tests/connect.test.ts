@@ -1,7 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
-  authorize: vi.fn(),
+  authConfigsList: vi.fn(),
+  link: vi.fn(),
   list: vi.fn(),
   prisma: {
     integrationConfig: {
@@ -13,8 +14,8 @@ const mocks = vi.hoisted(() => ({
 
 vi.mock("../lib/composio", () => ({
   getComposioClient: () => ({
-    toolkits: { authorize: mocks.authorize },
-    connectedAccounts: { list: mocks.list },
+    authConfigs: { list: mocks.authConfigsList },
+    connectedAccounts: { link: mocks.link, list: mocks.list },
   }),
 }));
 vi.mock("../lib/prisma", () => ({ prisma: mocks.prisma }));
@@ -27,28 +28,72 @@ import {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  mocks.authConfigsList.mockResolvedValue({
+    items: [{ id: "ac_managed", isComposioManaged: true }],
+  });
   mocks.prisma.integrationConfig.upsert.mockResolvedValue({});
   mocks.prisma.integrationConfig.update.mockResolvedValue({});
 });
 
 describe("startToolkitConnect", () => {
-  it("returns the Composio redirect URL for the requested toolkit", async () => {
-    mocks.authorize.mockResolvedValue({
+  it("links the user via the Composio-managed auth config", async () => {
+    mocks.link.mockResolvedValue({
       id: "cr_1",
       redirectUrl: "https://backend.composio.dev/api/v3/s/abc",
     });
 
     const result = await startToolkitConnect("user_1", "notion");
 
-    expect(mocks.authorize).toHaveBeenCalledWith("user_1", "notion");
+    expect(mocks.authConfigsList).toHaveBeenCalledWith({ toolkit: "notion" });
+    expect(mocks.link).toHaveBeenCalledWith("user_1", "ac_managed");
     expect(result).toEqual({
       connectionRequestId: "cr_1",
       redirectUrl: "https://backend.composio.dev/api/v3/s/abc",
     });
   });
 
+  it("prefers a Composio-managed config over a custom one", async () => {
+    mocks.authConfigsList.mockResolvedValue({
+      items: [
+        { id: "ac_custom", isComposioManaged: false },
+        { id: "ac_managed", isComposioManaged: true },
+      ],
+    });
+    mocks.link.mockResolvedValue({
+      id: "cr_2",
+      redirectUrl: "https://backend.composio.dev/api/v3/s/def",
+    });
+
+    await startToolkitConnect("user_1", "slack");
+
+    expect(mocks.link).toHaveBeenCalledWith("user_1", "ac_managed");
+  });
+
+  it("falls back to any config when no managed one exists", async () => {
+    mocks.authConfigsList.mockResolvedValue({
+      items: [{ id: "ac_custom", isComposioManaged: false }],
+    });
+    mocks.link.mockResolvedValue({
+      id: "cr_3",
+      redirectUrl: "https://backend.composio.dev/api/v3/s/ghi",
+    });
+
+    await startToolkitConnect("user_1", "notion");
+
+    expect(mocks.link).toHaveBeenCalledWith("user_1", "ac_custom");
+  });
+
+  it("throws when no auth config exists for the toolkit", async () => {
+    mocks.authConfigsList.mockResolvedValue({ items: [] });
+
+    await expect(startToolkitConnect("user_1", "notion")).rejects.toThrow(
+      /auth config/i
+    );
+    expect(mocks.link).not.toHaveBeenCalled();
+  });
+
   it("throws when Composio returns no redirect URL", async () => {
-    mocks.authorize.mockResolvedValue({ id: "cr_2" });
+    mocks.link.mockResolvedValue({ id: "cr_4" });
     await expect(startToolkitConnect("user_1", "slack")).rejects.toThrow(
       /redirect/i
     );
