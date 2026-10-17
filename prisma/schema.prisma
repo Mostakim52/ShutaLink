@@ -1,0 +1,127 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum WorkflowStatus {
+  DRAFT
+  ACTIVE
+  PAUSED
+  ARCHIVED
+}
+
+enum TriggerType {
+  GITHUB_ISSUE_OPENED
+  CRON
+}
+
+enum RunStatus {
+  PENDING
+  RUNNING
+  SUCCEEDED
+  FAILED
+  CANCELLED
+}
+
+enum IntegrationProvider {
+  GITHUB
+  NOTION
+  SLACK
+}
+
+enum LogLevel {
+  INFO
+  WARN
+  ERROR
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  avatarUrl String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  workflows    Workflow[]
+  runs         WorkflowRun[]
+  integrations IntegrationConfig[]
+
+  @@index([createdAt])
+}
+
+model Workflow {
+  id             String         @id @default(cuid())
+  userId         String
+  name           String
+  description    String?
+  status         WorkflowStatus @default(DRAFT)
+  triggerType    TriggerType
+  triggerConfig  Json
+  cronExpression String?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  user User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  runs WorkflowRun[]
+
+  @@index([userId, status])
+  @@index([status, triggerType])
+}
+
+model WorkflowRun {
+  id             String    @id @default(uuid())
+  workflowId     String
+  userId         String
+  status         RunStatus @default(PENDING)
+  triggerPayload Json
+  result         Json?
+  error          String?
+  triggerRunId   String?
+  startedAt      DateTime?
+  finishedAt     DateTime?
+  createdAt      DateTime  @default(now())
+
+  workflow Workflow        @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+  user     User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  logs     ExecutionLog[]
+
+  @@unique([triggerRunId])
+  @@index([workflowId, status])
+  @@index([userId, createdAt])
+}
+
+model IntegrationConfig {
+  id                 String              @id @default(cuid())
+  userId             String
+  provider           IntegrationProvider
+  connectedAccountId String
+  authConfigId       String?
+  isActive           Boolean             @default(true)
+  metadata           Json?
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, provider])
+  @@index([provider, isActive])
+}
+
+model ExecutionLog {
+  id        String   @id @default(uuid())
+  runId     String
+  step      String
+  level     LogLevel @default(INFO)
+  message   String
+  data      Json?
+  createdAt DateTime @default(now())
+
+  run WorkflowRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+
+  @@index([runId, createdAt])
+}
