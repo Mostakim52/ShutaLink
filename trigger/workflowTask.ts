@@ -50,7 +50,7 @@ function renderNotionContent(payload: WorkflowTaskPayload, analysis: IssueAnalys
     payload.issueBody?.trim() || "(empty body)",
     "",
     "---",
-    "_Archived automatically by Chronoweave._",
+    "_Archived automatically by Signalwright._",
   ].join("\n");
 }
 

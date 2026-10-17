@@ -4,7 +4,7 @@ import { PROCESS_GITHUB_ISSUE_TASK_ID, type WorkflowTaskPayload } from "../lib/t
 
 const prisma = new PrismaClient();
 
-const DEMO_EMAIL = "demo@chronoweave.dev";
+const DEMO_EMAIL = "demo@signalwright.dev";
 
 async function main(): Promise<void> {
   const user = await prisma.user.findUnique({ where: { email: DEMO_EMAIL } });
