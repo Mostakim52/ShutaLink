@@ -1,4 +1,6 @@
 import { getSessionUser } from "../lib/session";
+import { ShutaLinkMark } from "../components/brand";
+import { GitHubIcon, NotionIcon, SlackIcon } from "../components/icons";
 
 export default async function HomePage() {
   const user = await getSessionUser();
@@ -7,7 +9,8 @@ export default async function HomePage() {
     <main className="shell">
       <header className="topbar">
         <a className="brand" href="/">
-          SHUTALINK <span className="brand-mark">///</span>
+          <ShutaLinkMark className="brand-logo" />
+          <span>SHUTALINK</span> <span className="brand-mark">///</span>
         </a>
         <nav className="topnav">
           <a className="topnav-link topnav-link--strong" href={user ? "/onboarding" : "/signin"}>
@@ -30,6 +33,7 @@ export default async function HomePage() {
         </p>
         <div className="hero-actions">
           <a className="btn btn-primary" href={user ? "/onboarding" : "/signin"}>
+            <GitHubIcon className="btn-icon" />
             {user ? "Open setup" : "Install the GitHub App"}
           </a>
           <span className="hero-note">Free while in beta · daily run caps apply</span>
@@ -61,11 +65,13 @@ export default async function HomePage() {
           </p>
           <ul className="redline-routes">
             <li className="redline-route">
-              <span className="route-arrow">→</span> Notion · archive page created
+              <span className="route-arrow">→</span>
+              <NotionIcon className="route-icon" /> Notion · archive page created
             </li>
             <li className="redline-route">
-              <span className="route-arrow route-arrow--red">→</span> Slack ·
-              #incident-alerts · paged first
+              <span className="route-arrow route-arrow--red">→</span>
+              <SlackIcon className="route-icon" /> Slack · #incident-alerts ·
+              paged first
             </li>
           </ul>
         </div>

@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 160" role="img">
+  <title>ShutaLink</title>
+  <g transform="translate(12 20) scale(1.875)">
+    <g transform="translate(32 32) rotate(-45) scale(0.92) translate(-11 0)" fill="none" stroke-width="7" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M-7-8H7A8 8 0 0 1 7 8H-7A8 8 0 0 1-7-8Z" stroke="#e9f1f9"/>
+      <path d="M15-8H29A8 8 0 0 1 29 8H15A8 8 0 0 1 15-8Z" stroke="#ffb020"/>
+      <path d="M7-8A8 8 0 0 1 7 8" pathLength="100" stroke="#e9f1f9" stroke-dasharray="17 83" stroke-dashoffset="-75"/>
+    </g>
+  </g>
+  <text x="148" y="96" font-family="ui-monospace, 'SFMono-Regular', Menlo, Consolas, 'Liberation Mono', monospace" font-size="46" font-weight="600" letter-spacing="10" fill="#e9f1f9" textLength="338" lengthAdjust="spacingAndGlyphs">SHUTALINK</text>
+  <text x="502" y="92" font-family="ui-monospace, 'SFMono-Regular', Menlo, Consolas, 'Liberation Mono', monospace" font-size="34" font-weight="600" letter-spacing="8" fill="#ff5238" textLength="84" lengthAdjust="spacingAndGlyphs">///</text>
+</svg>

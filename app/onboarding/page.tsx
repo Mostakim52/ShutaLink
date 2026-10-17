@@ -7,6 +7,8 @@ import {
   saveIntegrationSettings,
   startConnect,
 } from "./actions";
+import { ShutaLinkMark } from "../../components/brand";
+import { GitHubIcon, NotionIcon, SlackIcon } from "../../components/icons";
 
 export const metadata = {
   title: "Setup — ShutaLink",
@@ -62,7 +64,8 @@ export default async function OnboardingPage({
     <main className="shell shell--narrow">
       <header className="topbar">
         <a className="brand" href="/">
-          SHUTALINK <span className="brand-mark">///</span>
+          <ShutaLinkMark className="brand-logo" />
+          <span>SHUTALINK</span> <span className="brand-mark">///</span>
         </a>
         <nav className="topnav">
           <span className="topbar-email">{user.email}</span>
@@ -121,7 +124,10 @@ export default async function OnboardingPage({
         <li className="workorder-step">
           <span className="step-num">01</span>
           <div className="step-body">
-            <h3 className="step-title">GitHub account</h3>
+            <h3 className="step-title">
+              <GitHubIcon className="step-icon step-icon--done" />
+              GitHub account
+            </h3>
             <p className="step-detail">
               Signed in as {user.email}. This is the account that owns your
               setup.
@@ -135,7 +141,12 @@ export default async function OnboardingPage({
         <li className="workorder-step">
           <span className="step-num">02</span>
           <div className="step-body">
-            <h3 className="step-title">Install the GitHub App</h3>
+            <h3 className="step-title">
+              <GitHubIcon
+                className={`step-icon${githubInstalled ? " step-icon--done" : ""}`}
+              />
+              Install the GitHub App
+            </h3>
             <p className="step-detail">
               Pick the repositories ShutaLink may watch. Issues from those
               repos trigger triage; nothing else is read.
@@ -170,7 +181,12 @@ export default async function OnboardingPage({
         <li className="workorder-step">
           <span className="step-num">03</span>
           <div className="step-body">
-            <h3 className="step-title">Connect Notion</h3>
+            <h3 className="step-title">
+              <NotionIcon
+                className={`step-icon${notionConnected ? " step-icon--done" : ""}`}
+              />
+              Connect Notion
+            </h3>
             <p className="step-detail">
               Issue summaries are archived as pages in your workspace. Paste a
               page link below and ShutaLink files everything under it.
@@ -230,7 +246,12 @@ export default async function OnboardingPage({
         <li className="workorder-step">
           <span className="step-num">04</span>
           <div className="step-body">
-            <h3 className="step-title">Connect Slack</h3>
+            <h3 className="step-title">
+              <SlackIcon
+                className={`step-icon${slackConnected ? " step-icon--done" : ""}`}
+              />
+              Connect Slack
+            </h3>
             <p className="step-detail">
               Low and medium severities post to your notifications channel;
               high severities page the alerts channel first.

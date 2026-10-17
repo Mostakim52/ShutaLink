@@ -1,4 +1,6 @@
 import { signIn } from "../../auth";
+import { ShutaLinkMark } from "../../components/brand";
+import { GitHubIcon } from "../../components/icons";
 
 export const metadata = {
   title: "Sign in — ShutaLink",
@@ -9,7 +11,8 @@ export default function SignInPage() {
     <main className="auth-shell">
       <div className="auth-card">
         <span className="brand">
-          SHUTALINK <span className="brand-mark">///</span>
+          <ShutaLinkMark className="brand-logo" />
+          <span>SHUTALINK</span> <span className="brand-mark">///</span>
         </span>
         <h1 className="auth-title">Sign in to connect your repos</h1>
         <p className="auth-copy">
@@ -24,6 +27,7 @@ export default function SignInPage() {
           }}
         >
           <button className="btn btn-primary" type="submit">
+            <GitHubIcon className="btn-icon" />
             Continue with GitHub
           </button>
         </form>
