@@ -81,8 +81,10 @@ async function executeTool<TData>(
 ): Promise<TData> {
   const composio = getComposioClient();
 
+  const composioUserId = process.env.COMPOSIO_USER_ID || params.userId;
+
   const response = (await composio.tools.execute(slug, {
-    userId: params.userId,
+    userId: composioUserId,
     connectedAccountId: params.connectedAccountId,
     arguments: params.args,
     dangerouslySkipVersionCheck: true,
@@ -131,13 +133,13 @@ export async function createNotionPage(params: {
     );
   }
 
-  const data = await executeTool<Record<string, unknown>>("NOTION_CREATE_PAGE", {
+  const data = await executeTool<Record<string, unknown>>("NOTION_CREATE_NOTION_PAGE", {
     userId: params.userId,
     connectedAccountId,
     args: {
       parent_id: parentPageId,
       title: params.title,
-      content: params.markdownContent,
+      markdown: params.markdownContent,
     },
   });
 
@@ -185,7 +187,7 @@ export async function sendSlackMessage(params: {
     connectedAccountId,
     args: {
       channel: params.channel,
-      text: params.text,
+      markdown_text: params.text,
     },
   });
 

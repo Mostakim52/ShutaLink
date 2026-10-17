@@ -3,7 +3,7 @@ node_modules/
 out/
 build/
 dist/
-
+.history/
 .env
 .env.local
 .env.development.local

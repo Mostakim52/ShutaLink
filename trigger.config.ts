@@ -1,4 +1,5 @@
 import { defineConfig } from "@trigger.dev/sdk";
+import { prismaExtension } from "@trigger.dev/build/extensions/prisma";
 
 const projectRef = (process.env.TRIGGER_PROJECT_REF ?? "").trim();
 
@@ -18,4 +19,12 @@ export default defineConfig({
     },
   },
   dirs: ["./trigger"],
+  build: {
+    extensions: [
+      prismaExtension({
+        mode: "legacy",
+        schema: "prisma/schema.prisma",
+      }),
+    ],
+  },
 });
